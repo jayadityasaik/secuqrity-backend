@@ -15,7 +15,7 @@ app = FastAPI()
 
 if not os.path.exists("generated_qr"):
     os.makedirs("generated_qr")
-    
+
 # Serve generated QR PDFs
 app.mount(
     "/generated_qr",
@@ -86,7 +86,3 @@ def home():
     return {
         "message": "secuQRity Backend Running"
     }
-
-# Debug: print all routes
-for route in app.routes:
-    print(route.path)
