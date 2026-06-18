@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pymongo
+python-jose
+passlib[bcrypt]
+python-multipart
+cryptography
+qrcode
+pillow
+pycryptodome
+email-validator
+fpdf
+PyPDF2
