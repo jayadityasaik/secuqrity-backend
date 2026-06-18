@@ -12,3 +12,4 @@ email-validator
 fpdf
 PyPDF2
 requests
+python-dotenv
