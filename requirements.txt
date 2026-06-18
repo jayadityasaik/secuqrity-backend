@@ -11,3 +11,4 @@ pycryptodome
 email-validator
 fpdf
 PyPDF2
+requests
