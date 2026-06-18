@@ -13,3 +13,4 @@ fpdf
 PyPDF2
 requests
 python-dotenv
+reportlab
