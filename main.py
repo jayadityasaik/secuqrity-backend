@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
+import os
 from routes.setup_routes import router as setup_router
 from routes.biometric_routes import router as biometric_router
 from routes.qr_routes import router as qr_router
@@ -13,6 +13,9 @@ from routes.verification_routes import router as verification_router
 
 app = FastAPI()
 
+if not os.path.exists("generated_qr"):
+    os.makedirs("generated_qr")
+    
 # Serve generated QR PDFs
 app.mount(
     "/generated_qr",
