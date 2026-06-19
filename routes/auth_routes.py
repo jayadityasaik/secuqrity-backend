@@ -32,10 +32,6 @@ from authenticator_dependency import (
     verify_authenticator_token
 )
 
-from morpho_capture import (
-    capture_fingerprint
-)
-
 from biometric_matcher import (
     generate_fingerprint_hash
 )
@@ -73,6 +69,10 @@ class VerifyOTP(BaseModel):
 class EnrollUser(BaseModel):
 
     biometric_token: str
+
+    right_thumb: str
+
+    left_thumb: str
 
 # =========================================
 # AUTHENTICATOR LOGIN
@@ -233,31 +233,15 @@ def enroll_user(
             detail="Invalid biometric token"
         )
 
-    print(
-        "Capture RIGHT thumb"
-    )
-
-    right_thumb = (
-        capture_fingerprint()
-    )
-
-    print(
-        "Capture LEFT thumb"
-    )
-
-    left_thumb = (
-        capture_fingerprint()
-    )
-
     right_hash = (
         generate_fingerprint_hash(
-            right_thumb
+            data.right_thumb
         )
     )
 
     left_hash = (
         generate_fingerprint_hash(
-            left_thumb
+            data.left_thumb
         )
     )
 
