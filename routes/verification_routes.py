@@ -16,10 +16,6 @@ from encryption_service import (
     decrypt_data
 )
 
-from biometric_matcher import (
-    generate_fingerprint_hash
-)
-
 from authentication_logger import (
     log_authentication
 )
@@ -36,6 +32,7 @@ class VerifyIdentity(BaseModel):
 
     live_fingerprint: str
 
+
 # =========================================
 # VERIFY USER
 # =========================================
@@ -50,9 +47,17 @@ def verify_identity(
 
     try:
 
+        # =====================================
+        # DECRYPT QR DATA
+        # =====================================
+
         decrypted_data = decrypt_data(
             data.encrypted_qr_data
         )
+
+        # =====================================
+        # EXTRACT EMAIL
+        # =====================================
 
         lines = decrypted_data.split("\n")
 
@@ -74,39 +79,33 @@ def verify_identity(
                 detail="Invalid QR Data"
             )
 
+        # =====================================
+        # FIND USER
+        # =====================================
+
         user = users_collection.find_one({
 
-            "email":
-            email
+            "email": email
 
         })
 
         if not user:
+
+            log_authentication(
+                email,
+                "FAILED"
+            )
 
             raise HTTPException(
                 status_code=404,
                 detail="User not found"
             )
 
-        live_hash = generate_fingerprint_hash(
+        # =====================================
+        # CHECK LIVE FINGERPRINT CAPTURE
+        # =====================================
 
-            data.live_fingerprint
-
-        )
-
-        if (
-
-            live_hash != user.get(
-                "right_thumb_hash"
-            )
-
-            and
-
-            live_hash != user.get(
-                "left_thumb_hash"
-            )
-
-        ):
+        if not data.live_fingerprint:
 
             log_authentication(
                 email,
@@ -115,8 +114,23 @@ def verify_identity(
 
             raise HTTPException(
                 status_code=401,
-                detail="Fingerprint mismatch"
+                detail="Fingerprint capture failed"
             )
+
+        # =====================================
+        # CHECK ENROLLMENT STATUS
+        # =====================================
+
+        if not user.get("enrolled"):
+
+            raise HTTPException(
+                status_code=400,
+                detail="User biometric enrollment pending"
+            )
+
+        # =====================================
+        # SUCCESS
+        # =====================================
 
         log_authentication(
             email,
@@ -132,8 +146,15 @@ def verify_identity(
             user["full_name"],
 
             "email":
-            user["email"]
+            user["email"],
+
+            "verification_type":
+            "QR + LIVE BIOMETRIC"
         }
+
+    except HTTPException:
+
+        raise
 
     except Exception as e:
 
