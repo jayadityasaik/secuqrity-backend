@@ -1,14 +1,23 @@
-import smtplib
 import random
+import resend
 
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from config import RESEND_API_KEY
 
-from config import EMAIL_ADDRESS, EMAIL_PASSWORD
+resend.api_key = RESEND_API_KEY
 
 
 def generate_otp():
     return str(random.randint(100000, 999999))
+
+
+def send_email(receiver_email, subject, body):
+
+    resend.Emails.send({
+        "from": "onboarding@resend.dev",
+        "to": receiver_email,
+        "subject": subject,
+        "text": body
+    })
 
 
 def send_email_otp(receiver_email, otp, role="user"):
@@ -16,32 +25,34 @@ def send_email_otp(receiver_email, otp, role="user"):
     subject = "secuQRity OTP Verification"
 
     if role == "authenticator":
-        body = f"WELCOME AUTHENTICATOR\n\nYour OTP is:\n\n{otp}\n\nValid for 5 minutes only."
+
+        body = (
+            f"WELCOME AUTHENTICATOR\n\n"
+            f"Your OTP is:\n\n{otp}\n\n"
+            "Valid for 5 minutes only."
+        )
 
     elif role == "admin":
-        body = f"WELCOME ADMIN\n\nYour OTP is:\n\n{otp}\n\nValid for 5 minutes only."
+
+        body = (
+            f"WELCOME ADMIN\n\n"
+            f"Your OTP is:\n\n{otp}\n\n"
+            "Valid for 5 minutes only."
+        )
 
     else:
-        body = f"WELCOME TO secuQRity\n\nYour OTP is:\n\n{otp}\n\nValid for 5 minutes only."
 
-    message = MIMEMultipart()
-    message["From"] = EMAIL_ADDRESS
-    message["To"] = receiver_email
-    message["Subject"] = subject
+        body = (
+            f"WELCOME TO secuQRity\n\n"
+            f"Your OTP is:\n\n{otp}\n\n"
+            "Valid for 5 minutes only."
+        )
 
-    message.attach(MIMEText(body, "plain"))
-
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.starttls()
-    server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-
-    server.sendmail(
-        EMAIL_ADDRESS,
+    send_email(
         receiver_email,
-        message.as_string()
+        subject,
+        body
     )
-
-    server.quit()
 
 
 def send_authenticator_credentials(
@@ -50,13 +61,11 @@ def send_authenticator_credentials(
     password
 ):
 
-    try:
+    subject = (
+        "Your secuQRity Authenticator Credentials"
+    )
 
-        subject = (
-            "Your secuQRity Authenticator Credentials"
-        )
-
-        body = f"""
+    body = f"""
 Hello,
 
 Your Authenticator Account has been created successfully.
@@ -78,45 +87,11 @@ Regards,
 secuQRity Team
 """
 
-        message = MIMEMultipart()
-
-        message["From"] = EMAIL_ADDRESS
-        message["To"] = receiver_email
-        message["Subject"] = subject
-
-        message.attach(
-            MIMEText(body, "plain")
-        )
-
-        server = smtplib.SMTP(
-            "smtp.gmail.com",
-            587
-        )
-
-        server.starttls()
-
-        server.login(
-            EMAIL_ADDRESS,
-            EMAIL_PASSWORD
-        )
-
-        server.sendmail(
-            EMAIL_ADDRESS,
-            receiver_email,
-            message.as_string()
-        )
-
-        server.quit()
-
-        print(
-            f"[SUCCESS] Authenticator credentials sent to {receiver_email}"
-        )
-
-    except Exception as e:
-
-        print(
-            f"[EMAIL ERROR] {str(e)}"
-        )
+    send_email(
+        receiver_email,
+        subject,
+        body
+    )
 
 
 def send_user_credentials(
@@ -125,7 +100,9 @@ def send_user_credentials(
     biometric_token
 ):
 
-    subject = "Your secuQRity User Credentials"
+    subject = (
+        "Your secuQRity User Credentials"
+    )
 
     body = f"""
 Hello,
@@ -148,21 +125,8 @@ Regards,
 secuQRity Team
 """
 
-    message = MIMEMultipart()
-    message["From"] = EMAIL_ADDRESS
-    message["To"] = receiver_email
-    message["Subject"] = subject
-
-    message.attach(MIMEText(body, "plain"))
-
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.starttls()
-    server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-
-    server.sendmail(
-        EMAIL_ADDRESS,
+    send_email(
         receiver_email,
-        message.as_string()
+        subject,
+        body
     )
-
-    server.quit()
