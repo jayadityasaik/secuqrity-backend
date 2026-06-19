@@ -44,7 +44,7 @@ router = APIRouter()
 
 ADMIN_ID = "biometricQRauthsecurQRity"
 ADMIN_PASSWORD = "Authenticity@038"
-ADMIN_EMAIL = "cse23733038@matrusri.edu.in"
+ADMIN_EMAIL = "jayadityasaik06@gmail.com"
 
 # =========================================
 # TEMP OTP STORAGE
