@@ -25,12 +25,8 @@ app.mount(
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://secuqrity-frontend.vercel.app",
-        "https://secuqrity-frontend-10djy7dd2-jayadityasaiks-projects.vercel.app",
-        "https://secuqrity-frontend-iaezjrct6-jayadityasaiks-projects.vercel.app"
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
