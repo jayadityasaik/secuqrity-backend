@@ -1,15 +1,24 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Depends
+)
+
 from pydantic import BaseModel
-from fastapi import Depends
 
 from authenticator_dependency import (
     verify_authenticator_token
 )
+
 from database import users_collection
 
-from encryption_service import decrypt_data
+from encryption_service import (
+    decrypt_data
+)
 
-from morpho_capture import capture_fingerprint
+from biometric_matcher import (
+    generate_fingerprint_hash
+)
 
 from authentication_logger import (
     log_authentication
@@ -18,15 +27,17 @@ from authentication_logger import (
 router = APIRouter()
 
 # =========================================
-# VERIFY REQUEST MODEL
+# VERIFY MODEL
 # =========================================
 
 class VerifyIdentity(BaseModel):
 
     encrypted_qr_data: str
 
+    live_fingerprint: str
+
 # =========================================
-# VERIFY USER IDENTITY
+# VERIFY USER
 # =========================================
 
 @router.post("/verify")
@@ -36,19 +47,12 @@ def verify_identity(
         verify_authenticator_token
     )
 ):
-    try:
 
-        # =================================
-        # DECRYPT QR DATA
-        # =================================
+    try:
 
         decrypted_data = decrypt_data(
             data.encrypted_qr_data
         )
-
-        # =================================
-        # EXTRACT EMAIL
-        # =================================
 
         lines = decrypted_data.split("\n")
 
@@ -70,41 +74,39 @@ def verify_identity(
                 detail="Invalid QR Data"
             )
 
-        # =================================
-        # FIND USER
-        # =================================
-
         user = users_collection.find_one({
 
-            "email": email
+            "email":
+            email
 
         })
 
         if not user:
-
-            log_authentication(
-                email,
-                "FAILED"
-            )
 
             raise HTTPException(
                 status_code=404,
                 detail="User not found"
             )
 
-        # =================================
-        # CAPTURE FINGERPRINT
-        # =================================
+        live_hash = generate_fingerprint_hash(
 
-        print(
-            "Place finger on scanner..."
+            data.live_fingerprint
+
         )
 
-        fingerprint_data = (
-            capture_fingerprint()
-        )
+        if (
 
-        if not fingerprint_data:
+            live_hash != user.get(
+                "right_thumb_hash"
+            )
+
+            and
+
+            live_hash != user.get(
+                "left_thumb_hash"
+            )
+
+        ):
 
             log_authentication(
                 email,
@@ -113,12 +115,8 @@ def verify_identity(
 
             raise HTTPException(
                 status_code=401,
-                detail="Fingerprint capture failed"
+                detail="Fingerprint mismatch"
             )
-
-        # =================================
-        # LOG SUCCESS
-        # =================================
 
         log_authentication(
             email,
@@ -140,8 +138,6 @@ def verify_identity(
     except Exception as e:
 
         raise HTTPException(
-
             status_code=500,
-
             detail=str(e)
         )
