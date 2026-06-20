@@ -105,11 +105,24 @@ def register_user(data: UserRegister):
         user_document
     )
 
-    send_user_credentials(
-        data.email,
-        data.password,
-        biometric_token
-    )
+    # =====================================
+    # EMAIL OPTIONAL
+    # =====================================
+
+    try:
+
+        send_user_credentials(
+            data.email,
+            data.password,
+            biometric_token
+        )
+
+    except Exception as e:
+
+        print(
+            "EMAIL ERROR:",
+            str(e)
+        )
 
     return {
 
@@ -119,7 +132,6 @@ def register_user(data: UserRegister):
         "biometric_token":
         biometric_token
     }
-
 
 # =========================================
 # USER LOGIN

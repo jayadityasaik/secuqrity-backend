@@ -95,10 +95,47 @@ secuQRity Team
 
 
 def send_user_credentials(
-    receiver_email,
+    email,
     password,
     biometric_token
 ):
+
+    try:
+
+        resend.Emails.send({
+
+            "from":
+            "onboarding@resend.dev",
+
+            "to":
+            email,
+
+            "subject":
+            "secuQRity Registration",
+
+            "html":
+            f"""
+            <h2>Registration Successful</h2>
+
+            <p>Email: {email}</p>
+
+            <p>Password: {password}</p>
+
+            <p>Biometric Token:
+            {biometric_token}</p>
+            """
+        })
+
+        print(
+            "EMAIL SENT SUCCESSFULLY"
+        )
+
+    except Exception as e:
+
+        print(
+            "EMAIL FAILED:",
+            str(e)
+        )
 
     subject = (
         "Your secuQRity User Credentials"
